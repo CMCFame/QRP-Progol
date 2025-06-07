@@ -1,0 +1,60 @@
+{
+  "short_name": "Progol Optimizer",
+  "name": "Progol Optimizer - Metodología Definitiva Core + Satélites",
+  "description": "Sistema avanzado de optimización para quinielas deportivas usando arquitectura Core + Satélites con GRASP-Annealing",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png", 
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png", 
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
+  "categories": [
+    "sports",
+    "utilities", 
+    "productivity"
+  ],
+  "lang": "es",
+  "scope": "/",
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Cargar Datos",
+      "short_name": "Datos",
+      "description": "Cargar partidos y datos de muestra",
+      "url": "/#datos",
+      "icons": [{ "src": "favicon.ico", "sizes": "32x32" }]
+    },
+    {
+      "name": "Generar Quinielas", 
+      "short_name": "Generar",
+      "description": "Clasificar y generar portafolio",
+      "url": "/#generacion",
+      "icons": [{ "src": "favicon.ico", "sizes": "32x32" }]
+    },
+    {
+      "name": "Ver Resultados",
+      "short_name": "Resultados", 
+      "description": "Analizar resultados y métricas",
+      "url": "/#resultados",
+      "icons": [{ "src": "favicon.ico", "sizes": "32x32" }]
+    }
+  ]
+}

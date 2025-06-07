@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="description" content="Progol Optimizer - Metodología Definitiva Core + Satélites para optimización de quinielas deportivas" />
+    <meta name="keywords" content="progol, quiniela, optimización, deportes, predicciones, core, satélites" />
+    <meta name="author" content="Progol Optimizer Team" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://progol-optimizer.netlify.app/" />
+    <meta property="og:title" content="Progol Optimizer - Metodología Definitiva" />
+    <meta property="og:description" content="Sistema avanzado de optimización para quinielas deportivas usando arquitectura Core + Satélites" />
+    <meta property="og:image" content="%PUBLIC_URL%/og-image.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://progol-optimizer.netlify.app/" />
+    <meta property="twitter:title" content="Progol Optimizer - Metodología Definitiva" />
+    <meta property="twitter:description" content="Sistema avanzado de optimización para quinielas deportivas usando arquitectura Core + Satélites" />
+    <meta property="twitter:image" content="%PUBLIC_URL%/og-image.png" />
+
+    <!-- PWA -->
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- Preconnect para mejorar performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Fuentes opcionales (comentadas por defecto) -->
+    <!-- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"> -->
+    
+    <title>Progol Optimizer - Metodología Definitiva</title>
+    
+    <!-- Structured Data para SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Progol Optimizer",
+      "description": "Sistema avanzado de optimización para quinielas deportivas usando arquitectura Core + Satélites",
+      "url": "https://progol-optimizer.netlify.app/",
+      "applicationCategory": "Sports",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "Clasificación automática de partidos",
+        "Generación de quinielas Core + Satélites", 
+        "Optimización GRASP-Annealing",
+        "Validación según metodología definitiva",
+        "Exportación múltiple (CSV, JSON, TXT)"
+      ]
+    }
+    </script>
+  </head>
+  <body>
+    <noscript>
+      <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
+        <h2>🚫 JavaScript Requerido</h2>
+        <p>Progol Optimizer requiere JavaScript para funcionar correctamente.</p>
+        <p>Por favor, habilita JavaScript en tu navegador e intenta nuevamente.</p>
+        <br>
+        <p><strong>Instrucciones por navegador:</strong></p>
+        <ul style="text-align: left; display: inline-block;">
+          <li><strong>Chrome:</strong> Configuración → Privacidad y seguridad → Configuración del sitio → JavaScript → Permitido</li>
+          <li><strong>Firefox:</strong> about:config → javascript.enabled → true</li>
+          <li><strong>Safari:</strong> Preferencias → Seguridad → Habilitar JavaScript</li>
+          <li><strong>Edge:</strong> Configuración → Privacidad, búsqueda y servicios → JavaScript → Permitido</li>
+        </ul>
+      </div>
+    </noscript>
+    
+    <div id="root">
+      <!-- Pantalla de carga inicial -->
+      <div style="
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        height: 100vh; 
+        flex-direction: column;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background-color: #f9fafb;
+      ">
+        <div style="
+          width: 64px; 
+          height: 64px; 
+          border: 4px solid #e5e7eb; 
+          border-top: 4px solid #2563eb; 
+          border-radius: 50%; 
+          animation: spin 1s linear infinite;
+          margin-bottom: 20px;
+        "></div>
+        <h2 style="color: #1f2937; margin: 0 0 8px 0;">Progol Optimizer</h2>
+        <p style="color: #6b7280; margin: 0;">Cargando metodología definitiva...</p>
+      </div>
+      
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+    </div>
+
+    <!-- 
+      Performance monitoring (opcional - descomentar si necesitas analytics)
+      
+      <script>
+        // Métricas básicas de performance
+        window.addEventListener('load', function() {
+          if ('performance' in window) {
+            const perfData = performance.getEntriesByType('navigation')[0];
+            console.log('Tiempo de carga:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
+          }
+        });
+      </script>
+    -->
+  </body>
+</html>
