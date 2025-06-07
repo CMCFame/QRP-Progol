@@ -1093,7 +1093,7 @@ class PortfolioValidator {
   }
 }
 
-// ==================== RESTO DEL CÓDIGO (DATOS, COMPONENTE PRINCIPAL, ETC.) ====================
+// ==================== DATOS DE MUESTRA ====================
 
 const createSampleData = () => {
   const equiposRegular = [
@@ -1127,9 +1127,9 @@ const createSampleData = () => {
     return equipos.map(([local, visitante], i) => {
       // Generar probabilidades más realistas y variadas
       const seed = i * 123456789;
-      const rand1 = Math.sin(seed) * 10000 % 1;
-      const rand2 = Math.sin(seed * 2) * 10000 % 1;
-      const rand3 = Math.sin(seed * 3) * 10000 % 1;
+      const rand1 = Math.abs(Math.sin(seed)) % 1;
+      const rand2 = Math.abs(Math.sin(seed * 2)) % 1;
+      const rand3 = Math.abs(Math.sin(seed * 3)) % 1;
       
       let probLocal, probEmpate, probVisitante;
       
@@ -1370,10 +1370,11 @@ export default function ProgolOptimizerApp() {
     reader.readAsText(file);
   }, []);
 
-  // ... [El resto del componente de renderizado permanece igual] ...
+  // ==================== RENDERIZADO ====================
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -1399,6 +1400,7 @@ export default function ProgolOptimizerApp() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Barra de Progreso */}
         <div className="bg-white rounded-lg shadow-sm border mb-6 p-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -1432,6 +1434,7 @@ export default function ProgolOptimizerApp() {
           </div>
         </div>
         
+        {/* Navigation Tabs */}
         <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
           {[
             { id: 'datos', label: 'Entrada de Datos', icon: Database },
@@ -1454,9 +1457,7 @@ export default function ProgolOptimizerApp() {
           ))}
         </div>
 
-        {/* Aquí continúa con las mismas secciones de renderizado del código original... */}
-        {/* Solo mostraré las primeras secciones para mantener la respuesta manejable */}
-        
+        {/* TAB: ENTRADA DE DATOS */}
         {activeTab === 'datos' && (
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-sm border">
@@ -1537,12 +1538,745 @@ export default function ProgolOptimizerApp() {
                 </div>
               </div>
             </div>
-            
-            {/* Resto de la sección de datos... */}
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white rounded-lg shadow-sm border">
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold mb-2">⚽ Partidos Regulares</h3>
+                  <p className="text-gray-600 mb-4">Ligas principales y competencias europeas (14 partidos)</p>
+                  
+                  {partidosRegular.length > 0 ? (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {partidosRegular.map((partido, i) => (
+                        <div key={i} className="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
+                          <span className="font-medium">{partido.local} vs {partido.visitante}</span>
+                          <span className="text-gray-600">
+                            {(partido.prob_local * 100).toFixed(0)}%-{(partido.prob_empate * 100).toFixed(0)}%-{(partido.prob_visitante * 100).toFixed(0)}%
+                            {partido.es_final && <span className="ml-1 text-red-500">🏆</span>}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <Database className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>No hay partidos regulares cargados</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border">
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold mb-2">🏆 Partidos Revancha</h3>
+                  <p className="text-gray-600 mb-4">Clásicos latinoamericanos y derbis (7 partidos)</p>
+                  
+                  {partidosRevancha.length > 0 ? (
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {partidosRevancha.map((partido, i) => (
+                        <div key={i} className="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
+                          <span className="font-medium">{partido.local} vs {partido.visitante}</span>
+                          <span className="text-gray-600">
+                            {(partido.prob_local * 100).toFixed(0)}%-{(partido.prob_empate * 100).toFixed(0)}%-{(partido.prob_visitante * 100).toFixed(0)}%
+                            {partido.es_final && <span className="ml-1 text-red-500">🏆</span>}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <Database className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>No hay partidos de revancha cargados</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {partidosRegular.length >= 14 && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 text-green-700">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span className="font-medium">¡Listo para continuar!</span>
+                  <span className="text-sm">Tienes suficientes partidos para generar las quinielas</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
-        
-        {/* Las demás secciones de activeTab permanecen iguales */}
+
+        {/* TAB: GENERACIÓN */}
+        {activeTab === 'generacion' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow-sm border">
+              <div className="p-6">
+                <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                  <Zap className="w-5 h-5" />
+                  Generación de Portafolio
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  Sigue la metodología Core + Satélites con optimización GRASP-Annealing
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                  <div className="text-center">
+                    <div className="text-lg font-bold">{config.numQuinielas}</div>
+                    <div className="text-sm text-gray-600">Quinielas Target</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold">{config.empatesMin}-{config.empatesMax}</div>
+                    <div className="text-sm text-gray-600">Empates por Quiniela</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold">{(config.concentracionGeneral * 100).toFixed(0)}%</div>
+                    <div className="text-sm text-gray-600">Concentración Máx</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold">{partidosClasificados.length}</div>
+                    <div className="text-sm text-gray-600">Partidos Clasificados</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <button
+                    onClick={clasificarPartidos}
+                    disabled={partidosRegular.length < 14 || loading}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-colors ${
+                      partidosRegular.length >= 14 && !loading
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <Brain className="w-4 h-4" />
+                    {loading ? 'Clasificando...' : 'Clasificar Partidos'}
+                  </button>
+
+                  <button
+                    onClick={generarQuinielasCore}
+                    disabled={partidosClasificados.length === 0 || loading}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-colors ${
+                      partidosClasificados.length > 0 && !loading
+                        ? 'bg-green-600 text-white hover:bg-green-700'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <Target className="w-4 h-4" />
+                    {loading ? 'Generando...' : 'Generar Core (4)'}
+                  </button>
+
+                  <button
+                    onClick={generarQuinielasSatelites}
+                    disabled={quinielasCore.length === 0 || loading}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-colors ${
+                      quinielasCore.length > 0 && !loading
+                        ? 'bg-purple-600 text-white hover:bg-purple-700'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    {loading ? 'Generando...' : `Generar Satélites (${config.numQuinielas - 4})`}
+                  </button>
+
+                  <button
+                    onClick={() => setShowAdvanced(!showAdvanced)}
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                  >
+                    <Settings className="w-4 h-4" />
+                    {showAdvanced ? 'Ocultar Config' : 'Config Avanzada'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Panel de Configuración Avanzada */}
+            {showAdvanced && (
+              <div className="bg-orange-50 border border-orange-200 rounded-lg">
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold mb-2 flex items-center gap-2 text-orange-700">
+                    <Gauge className="w-5 h-5" />
+                    Parámetros de Optimización Monte Carlo
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    Configuración avanzada del algoritmo GRASP-Annealing
+                  </p>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Número de quinielas: {config.numQuinielas}
+                      </label>
+                      <input
+                        type="range"
+                        min="5"
+                        max="30"
+                        value={config.numQuinielas}
+                        onChange={(e) => setConfig(prev => ({ ...prev, numQuinielas: parseInt(e.target.value) }))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>5</span>
+                        <span>30</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Iteraciones del optimizador: {config.iteracionesOptimizador}
+                      </label>
+                      <input
+                        type="range"
+                        min="500"
+                        max="5000"
+                        step="100"
+                        value={config.iteracionesOptimizador}
+                        onChange={(e) => setConfig(prev => ({ ...prev, iteracionesOptimizador: parseInt(e.target.value) }))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>500</span>
+                        <span>5000</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Temperatura inicial: {config.temperaturaInicial.toFixed(2)}
+                      </label>
+                      <input
+                        type="range"
+                        min="0.10"
+                        max="1.00"
+                        step="0.01"
+                        value={config.temperaturaInicial}
+                        onChange={(e) => setConfig(prev => ({ ...prev, temperaturaInicial: parseFloat(e.target.value) }))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>0.10</span>
+                        <span>1.00</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tasa de enfriamiento: {config.tasaEnfriamiento.toFixed(3)}
+                      </label>
+                      <input
+                        type="range"
+                        min="0.990"
+                        max="0.999"
+                        step="0.001"
+                        value={config.tasaEnfriamiento}
+                        onChange={(e) => setConfig(prev => ({ ...prev, tasaEnfriamiento: parseFloat(e.target.value) }))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>0.990</span>
+                        <span>0.999</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Simulaciones Monte Carlo: {config.simulacionesMonteCarlo}
+                      </label>
+                      <input
+                        type="range"
+                        min="1000"
+                        max="5000"
+                        step="100"
+                        value={config.simulacionesMonteCarlo}
+                        onChange={(e) => setConfig(prev => ({ ...prev, simulacionesMonteCarlo: parseInt(e.target.value) }))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>1000</span>
+                        <span>5000</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-orange-200">
+                      <button
+                        onClick={ejecutarOptimizacionAvanzada}
+                        disabled={quinielasCore.length === 0 || quinielasSatelites.length === 0 || loading}
+                        className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-lg font-bold text-lg transition-colors ${
+                          quinielasCore.length > 0 && quinielasSatelites.length > 0 && !loading
+                            ? 'bg-red-600 text-white hover:bg-red-700 shadow-lg'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        }`}
+                      >
+                        <Zap className="w-6 h-6" />
+                        {loading ? 'Ejecutando Optimización...' : '🚀 Iniciar Optimización Definitiva'}
+                      </button>
+                      <p className="text-center text-sm text-orange-600 mt-2">
+                        Esto ejecutará {config.iteracionesOptimizador} iteraciones con {config.simulacionesMonteCarlo} simulaciones Monte Carlo
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Progreso de optimización */}
+            {optimizationProgress && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Zap className="w-4 h-4 text-blue-600" />
+                  <span className="font-medium text-blue-700">Optimización en progreso...</span>
+                </div>
+                <div className="w-full bg-blue-200 rounded-full h-3">
+                  <div 
+                    className="bg-blue-600 h-3 rounded-full transition-all duration-300"
+                    style={{ width: `${optimizationProgress.porcentaje}%` }}
+                  />
+                </div>
+                <div className="text-sm text-blue-600 mt-2">
+                  Iteración {optimizationProgress.iteracion} - Score: {optimizationProgress.score.toFixed(4)} - {optimizationProgress.porcentaje.toFixed(1)}%
+                </div>
+              </div>
+            )}
+
+            {/* Clasificación de partidos */}
+            {partidosClasificados.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border">
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold mb-4">🎯 Clasificación de Partidos</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+                    {['Ancla', 'Divisor', 'TendenciaEmpate', 'Volátil', 'Neutro'].map(tipo => {
+                      const count = partidosClasificados.filter(p => p.clasificacion === tipo).length;
+                      const color = {
+                        'Ancla': 'text-red-600',
+                        'Divisor': 'text-yellow-600',
+                        'TendenciaEmpate': 'text-blue-600',
+                        'Volátil': 'text-purple-600',
+                        'Neutro': 'text-gray-600'
+                      }[tipo];
+                      
+                      return (
+                        <div key={tipo} className="text-center">
+                          <div className={`text-lg font-bold ${color}`}>{count}</div>
+                          <div className="text-sm text-gray-600">{tipo}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  <div className="space-y-1 max-h-32 overflow-y-auto text-sm">
+                    {partidosClasificados.map((partido, i) => (
+                      <div key={i} className="flex justify-between items-center">
+                        <span>{partido.local} vs {partido.visitante}</span>
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          partido.clasificacion === 'Ancla' ? 'bg-red-100 text-red-600' :
+                          partido.clasificacion === 'Divisor' ? 'bg-yellow-100 text-yellow-600' :
+                          partido.clasificacion === 'TendenciaEmpate' ? 'bg-blue-100 text-blue-600' :
+                          partido.clasificacion === 'Volátil' ? 'bg-purple-100 text-purple-600' :
+                          'bg-gray-100 text-gray-600'
+                        }`}>
+                          {partido.clasificacion}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Estado del progreso */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className={`bg-white rounded-lg shadow-sm border p-4 text-center ${quinielasCore.length > 0 ? 'border-green-200 bg-green-50' : ''}`}>
+                <Target className={`w-8 h-8 mx-auto mb-2 ${quinielasCore.length > 0 ? 'text-green-600' : 'text-gray-400'}`} />
+                <div className={`font-medium ${quinielasCore.length > 0 ? 'text-green-700' : 'text-gray-600'}`}>
+                  Quinielas Core: {quinielasCore.length}/4
+                </div>
+              </div>
+
+              <div className={`bg-white rounded-lg shadow-sm border p-4 text-center ${quinielasSatelites.length > 0 ? 'border-purple-200 bg-purple-50' : ''}`}>
+                <RefreshCw className={`w-8 h-8 mx-auto mb-2 ${quinielasSatelites.length > 0 ? 'text-purple-600' : 'text-gray-400'}`} />
+                <div className={`font-medium ${quinielasSatelites.length > 0 ? 'text-purple-700' : 'text-gray-600'}`}>
+                  Quinielas Satélites: {quinielasSatelites.length}/{config.numQuinielas - 4}
+                </div>
+              </div>
+
+              <div className={`bg-white rounded-lg shadow-sm border p-4 text-center ${quinielasFinales.length > 0 ? 'border-orange-200 bg-orange-50' : ''}`}>
+                <CheckCircle2 className={`w-8 h-8 mx-auto mb-2 ${quinielasFinales.length > 0 ? 'text-orange-600' : 'text-gray-400'}`} />
+                <div className={`font-medium ${quinielasFinales.length > 0 ? 'text-orange-700' : 'text-gray-600'}`}>
+                  Portafolio Final: {quinielasFinales.length}/{config.numQuinielas}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: RESULTADOS */}
+        {activeTab === 'resultados' && (
+          <div className="space-y-6">
+            {quinielasFinales.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
+                <BarChart3 className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                <h3 className="text-lg font-medium text-gray-600 mb-2">No hay resultados aún</h3>
+                <p className="text-gray-500">Genera las quinielas primero para ver el análisis</p>
+              </div>
+            ) : (
+              <>
+                {/* Métricas principales */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
+                    <div className="text-2xl font-bold text-blue-600">{quinielasFinales.length}</div>
+                    <div className="text-sm text-gray-600">Total Quinielas</div>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {(quinielasFinales.reduce((acc, q) => acc + q.resultados.filter(r => r === 'E').length, 0) / quinielasFinales.length).toFixed(1)}
+                    </div>
+                    <div className="text-sm text-gray-600">Empates Promedio</div>
+                    <div className="text-xs text-gray-500">Target: {PROGOL_CONFIG.EMPATES_PROMEDIO}</div>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {(quinielasFinales.reduce((acc, q) => acc + (q.prob_11_plus || 0), 0) / quinielasFinales.length * 100).toFixed(1)}%
+                    </div>
+                    <div className="text-sm text-gray-600">Pr[≥11] Promedio</div>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
+                    <div className="text-2xl font-bold text-orange-600">
+                      {validacion?.metricas?.prob_portafolio_11_plus ? 
+                        (validacion.metricas.prob_portafolio_11_plus * 100).toFixed(1) : '0.0'}%
+                    </div>
+                    <div className="text-sm text-gray-600">Pr[≥11] Portafolio</div>
+                  </div>
+                </div>
+
+                {/* Distribución vs Target */}
+                <div className="bg-white rounded-lg shadow-sm border">
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold mb-4">📊 Distribución vs Histórico</h3>
+                    
+                    <div className="grid grid-cols-3 gap-4">
+                      {['L', 'E', 'V'].map(resultado => {
+                        const totalPredicciones = quinielasFinales.length * 14;
+                        const conteos = { L: 0, E: 0, V: 0 };
+                        quinielasFinales.forEach(q => {
+                          q.resultados.forEach(r => conteos[r]++);
+                        });
+                        const actual = conteos[resultado] / totalPredicciones;
+                        const target = PROGOL_CONFIG.DISTRIBUCION_HISTORICA[resultado];
+                        const [min, max] = PROGOL_CONFIG.RANGOS_HISTORICOS[resultado];
+                        const enRango = actual >= min && actual <= max;
+                        
+                        return (
+                          <div key={resultado} className="text-center">
+                            <div className={`text-lg font-bold ${enRango ? 'text-green-600' : 'text-red-600'}`}>
+                              {(actual * 100).toFixed(1)}%
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {resultado === 'L' ? 'Locales' : resultado === 'E' ? 'Empates' : 'Visitantes'}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Target: {(target * 100).toFixed(1)}% ({(min * 100).toFixed(1)}-{(max * 100).toFixed(1)}%)
+                            </div>
+                            <div className={`text-xs ${enRango ? 'text-green-600' : 'text-red-600'}`}>
+                              {enRango ? '✓ En rango' : '✗ Fuera de rango'}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Estado de validación */}
+                {validacion && (
+                  <div className="bg-white rounded-lg shadow-sm border">
+                    <div className="p-6">
+                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        {validacion.es_valido ? (
+                          <CheckCircle2 className="w-5 h-5 text-green-600" />
+                        ) : (
+                          <div className="w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs">!</span>
+                          </div>
+                        )}
+                        Estado de Validación
+                      </h3>
+                      
+                      <div className={`p-4 rounded-lg ${validacion.es_valido ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
+                        <div className={`font-medium ${validacion.es_valido ? 'text-green-700' : 'text-yellow-700'}`}>
+                          {validacion.es_valido ? '✅ Portafolio válido' : '⚠️ Portafolio con advertencias'}
+                        </div>
+                        
+                        {validacion.warnings.length > 0 && (
+                          <div className="mt-2">
+                            <div className="text-sm font-medium text-yellow-700 mb-1">Advertencias:</div>
+                            <ul className="text-sm text-yellow-600 space-y-1">
+                              {validacion.warnings.slice(0, 3).map((warning, i) => (
+                                <li key={i}>• {warning}</li>
+                              ))}
+                              {validacion.warnings.length > 3 && (
+                                <li>• ... y {validacion.warnings.length - 3} más</li>
+                              )}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {validacion.errores.length > 0 && (
+                          <div className="mt-2">
+                            <div className="text-sm font-medium text-red-700 mb-1">Errores:</div>
+                            <ul className="text-sm text-red-600 space-y-1">
+                              {validacion.errores.map((error, i) => (
+                                <li key={i}>• {error}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Métricas adicionales */}
+                      {validacion.metricas && (
+                        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-blue-600">
+                              {validacion.metricas.diversidad_score ? 
+                                (validacion.metricas.diversidad_score * 100).toFixed(1) : 'N/A'}%
+                            </div>
+                            <div className="text-xs text-gray-500">Diversidad</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-green-600">
+                              ${validacion.metricas.costo_total || 0}
+                            </div>
+                            <div className="text-xs text-gray-500">Costo Total (MXN)</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-purple-600">
+                              {validacion.metricas.roi_estimado ? 
+                                (validacion.metricas.roi_estimado * 100).toFixed(1) : '0.0'}%
+                            </div>
+                            <div className="text-xs text-gray-500">ROI Estimado</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-orange-600">
+                              {validacion.metricas.eficiencia ? 
+                                validacion.metricas.eficiencia.toFixed(2) : '0.00'}
+                            </div>
+                            <div className="text-xs text-gray-500">Eficiencia</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Tabla de quinielas */}
+                <div className="bg-white rounded-lg shadow-sm border">
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold mb-4">📋 Todas las Quinielas</h3>
+                    
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left p-2">Q</th>
+                            <th className="text-left p-2">Tipo</th>
+                            {Array.from({length: 14}, (_, i) => (
+                              <th key={i} className="text-center p-1 w-8">P{i+1}</th>
+                            ))}
+                            <th className="text-center p-2">E</th>
+                            <th className="text-center p-2">Pr≥11</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {quinielasFinales.slice(0, 15).map((quiniela, i) => (
+                            <tr key={i} className="border-b hover:bg-gray-50">
+                              <td className="p-2 font-medium">Q-{i+1}</td>
+                              <td className={`p-2 text-xs ${
+                                quiniela.tipo === 'Core' ? 'text-green-600' : 'text-purple-600'
+                              }`}>
+                                {quiniela.tipo}
+                              </td>
+                              {quiniela.resultados.map((resultado, j) => (
+                                <td key={j} className={`text-center p-1 font-mono ${
+                                  resultado === 'L' ? 'text-blue-600' :
+                                  resultado === 'E' ? 'text-gray-600' : 'text-red-600'
+                                }`}>
+                                  {resultado}
+                                </td>
+                              ))}
+                              <td className="text-center p-2">{quiniela.empates}</td>
+                              <td className="text-center p-2">{((quiniela.prob_11_plus || 0) * 100).toFixed(1)}%</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      
+                      {quinielasFinales.length > 15 && (
+                        <div className="text-center p-4 text-gray-500 text-sm">
+                          Mostrando las primeras 15 de {quinielasFinales.length} quinielas
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* TAB: EXPORTACIÓN */}
+        {activeTab === 'exportacion' && (
+          <div className="space-y-6">
+            {quinielasFinales.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
+                <FileDown className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                <h3 className="text-lg font-medium text-gray-600 mb-2">No hay datos para exportar</h3>
+                <p className="text-gray-500">Genera las quinielas primero para poder exportar</p>
+              </div>
+            ) : (
+              <>
+                <div className="bg-white rounded-lg shadow-sm border">
+                  <div className="p-6">
+                    <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                      <FileDown className="w-5 h-5" />
+                      Exportación de Resultados
+                    </h2>
+                    <p className="text-gray-600 mb-6">
+                      Descarga las quinielas en diferentes formatos
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <button
+                        onClick={() => {
+                          const csvContent = generateCSVExport(quinielasFinales);
+                          downloadFile(csvContent, `progol_quinielas_${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv');
+                        }}
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        <FileDown className="w-4 h-4" />
+                        Descargar CSV
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          const jsonContent = generateJSONExport(quinielasFinales, partidosRegular, validacion);
+                          downloadFile(jsonContent, `progol_quinielas_${new Date().toISOString().slice(0, 10)}.json`, 'application/json');
+                        }}
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        <FileDown className="w-4 h-4" />
+                        Descargar JSON
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          const txtContent = generateProgolFormat(quinielasFinales, partidosRegular);
+                          downloadFile(txtContent, `progol_boletos_${new Date().toISOString().slice(0, 10)}.txt`, 'text/plain');
+                        }}
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                      >
+                        <FileDown className="w-4 h-4" />
+                        Formato Progol
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-sm border">
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold mb-4">📊 Resumen del Portafolio</h3>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-600">{quinielasFinales.length}</div>
+                        <div className="text-sm text-gray-600">Total Quinielas</div>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">
+                          {quinielasFinales.reduce((acc, q) => acc + q.empates, 0)}
+                        </div>
+                        <div className="text-sm text-gray-600">Total Empates</div>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-purple-600">
+                          ${quinielasFinales.length * 15}
+                        </div>
+                        <div className="text-sm text-gray-600">Costo Total (MXN)</div>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-orange-600">
+                          {validacion?.metricas?.prob_portafolio_11_plus ? 
+                            (validacion.metricas.prob_portafolio_11_plus * 100).toFixed(1) : '0.0'}%
+                        </div>
+                        <div className="text-sm text-gray-600">Pr[≥11] Final</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Análisis detallado */}
+                <div className="bg-white rounded-lg shadow-sm border">
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold mb-4">🔍 Análisis Detallado</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-medium text-gray-700 mb-3">Distribución por Tipo</h4>
+                        <div className="space-y-2">
+                          {['Core', 'Satelite'].map(tipo => {
+                            const count = quinielasFinales.filter(q => q.tipo === tipo).length;
+                            const percentage = (count / quinielasFinales.length) * 100;
+                            
+                            return (
+                              <div key={tipo} className="flex justify-between items-center">
+                                <span className="text-sm">{tipo}</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-20 bg-gray-200 rounded-full h-2">
+                                    <div 
+                                      className={`h-2 rounded-full ${tipo === 'Core' ? 'bg-green-500' : 'bg-purple-500'}`}
+                                      style={{ width: `${percentage}%` }}
+                                    />
+                                  </div>
+                                  <span className="text-sm font-medium">{count}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-medium text-gray-700 mb-3">Estadísticas de Empates</h4>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span>Mínimo:</span>
+                            <span>{Math.min(...quinielasFinales.map(q => q.empates))}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Máximo:</span>
+                            <span>{Math.max(...quinielasFinales.map(q => q.empates))}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Promedio:</span>
+                            <span>{(quinielasFinales.reduce((acc, q) => acc + q.empates, 0) / quinielasFinales.length).toFixed(1)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Histórico:</span>
+                            <span>{PROGOL_CONFIG.EMPATES_PROMEDIO}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1582,9 +2316,10 @@ function generateJSONExport(quinielas, partidos, validacion) {
 function generateProgolFormat(quinielas, partidos) {
   const lines = [
     'PROGOL OPTIMIZER - QUINIELAS OPTIMIZADAS',
-    '=' .repeat(50),
+    '='.repeat(50),
     `Generado: ${new Date().toLocaleString()}`,
     `Total quinielas: ${quinielas.length}`,
+    `Metodología: Core + Satélites GRASP-Annealing`,
     '',
     'PARTIDOS:',
     ...partidos.slice(0, 14).map((p, i) => `${String(i+1).padStart(2)}. ${p.local} vs ${p.visitante}`),
@@ -1593,8 +2328,16 @@ function generateProgolFormat(quinielas, partidos) {
     ...quinielas.map((q, i) => {
       const resultados = q.resultados.join(' ');
       const prob = ((q.prob_11_plus || 0) * 100).toFixed(1);
-      return `Q-${String(i+1).padStart(2)}: ${resultados} | Empates: ${q.empates} | Pr[≥11]: ${prob}%`;
-    })
+      return `Q-${String(i+1).padStart(2)} (${q.tipo.padStart(8)}): ${resultados} | E:${q.empates} | Pr≥11:${prob}%`;
+    }),
+    '',
+    'RESUMEN:',
+    `- Total de quinielas: ${quinielas.length}`,
+    `- Empates promedio: ${(quinielas.reduce((acc, q) => acc + q.empates, 0) / quinielas.length).toFixed(1)}`,
+    `- Costo total: ${quinielas.length * 15} MXN`,
+    '',
+    'Generado por Progol Optimizer v1.0.0',
+    'Metodología Definitiva Core + Satélites'
   ];
   
   return lines.join('\n');
