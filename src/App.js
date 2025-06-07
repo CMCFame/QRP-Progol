@@ -5,55 +5,75 @@ import './App.css';
 // ==================== CONFIGURACIÓN Y CONSTANTES ====================
 
 const PROGOL_CONFIG = {
+  // Source: Metodología Definitiva Progol.docx 
   DISTRIBUCION_HISTORICA: { L: 0.38, E: 0.29, V: 0.33 },
+  // Source: Metodología Definitiva Progol.docx 
   RANGOS_HISTORICOS: {
     L: [0.35, 0.41],
-    E: [0.25, 0.33], 
+    // Source: Metodología Definitiva Progol.docx 
+    E: [0.25, 0.33],
+    // Source: Metodología Definitiva Progol.docx 
     V: [0.30, 0.36]
   },
+  // Source: Metodología Definitiva Progol.docx 
   EMPATES_PROMEDIO: 4.33,
+  // Source: Metodología Definitiva Progol.docx 
   EMPATES_MIN: 4,
   EMPATES_MAX: 6,
+  // Source: Metodología Definitiva Progol.docx 
   CONCENTRACION_MAX_GENERAL: 0.70,
   CONCENTRACION_MAX_INICIAL: 0.60,
+  // Source: Metodología Definitiva Progol.docx 
   CALIBRACION: {
     k1_forma: 0.15,
     k2_lesiones: 0.10,
     k3_contexto: 0.20
   },
+  // Source: Metodología Definitiva Progol.docx 
   DRAW_PROPENSITY: {
     umbral_diferencia: 0.08,
     boost_empate: 0.06
   }
 };
 
+// ==================== SUGERENCIA DE MEJORA ====================
+// Para facilitar el mantenimiento futuro, se recomienda dividir las siguientes
+// clases (MatchClassifier, PortfolioGenerator, PortfolioValidator) en archivos
+// separados dentro de una nueva carpeta 'src/logic/'. Esto hará que el código
+// sea más fácil de leer y gestionar a medida que la aplicación crezca.
+
 // ==================== CLASES PRINCIPALES ====================
 
 class MatchClassifier {
   constructor() {
+    // Source: Metodología Definitiva Progol.docx 
     this.umbralAncla = 0.60;
     this.umbralDivisorMin = 0.40;
     this.umbralDivisorMax = 0.60;
+    // Source: Metodología Definitiva Progol.docx 
     this.umbralEmpate = 0.30;
   }
 
   classifyMatches(partidos) {
     return partidos.map((partido, i) => {
-      const partidoCalirado = this.aplicarCalibracionBayesiana(partido);
-      const clasificacion = this.clasificarPartido(partidoCalirado);
+      // Source: Metodología Definitiva Progol.docx 
+      const partidoCalibrado = this.aplicarCalibracionBayesiana(partido);
+      // Source: Metodología Definitiva Progol.docx 
+      const clasificacion = this.clasificarPartido(partidoCalibrado);
       
       return {
         id: i,
         local: partido.local,
         visitante: partido.visitante,
-        ...partidoCalirado,
+        ...partidoCalibrado,
         clasificacion,
-        resultadoSugerido: this.getResultadoSugerido(partidoCalirado),
-        confianza: this.calcularConfianza(partidoCalirado)
+        resultadoSugerido: this.getResultadoSugerido(partidoCalibrado),
+        confianza: this.calcularConfianza(partidoCalibrado)
       };
     });
   }
 
+  // Source: Metodología Definitiva Progol.docx 
   aplicarCalibracionBayesiana(partido) {
     const { k1_forma, k2_lesiones, k3_contexto } = PROGOL_CONFIG.CALIBRACION;
     
@@ -61,12 +81,14 @@ class MatchClassifier {
     const lesionesImpact = partido.lesiones_impact || 0;
     const contexto = partido.es_final ? 1.0 : 0.0;
     
+    // Source: Metodología Definitiva Progol.docx 
     const factorAjuste = 1 + k1_forma * deltaForma + k2_lesiones * lesionesImpact + k3_contexto * contexto;
     
     let probLocal = partido.prob_local * factorAjuste;
     let probEmpate = partido.prob_empate;
     let probVisitante = partido.prob_visitante / Math.max(factorAjuste, 0.1);
     
+    // Source: Metodología Definitiva Progol.docx 
     // Aplicar Draw-Propensity Rule
     if (Math.abs(probLocal - probVisitante) < PROGOL_CONFIG.DRAW_PROPENSITY.umbral_diferencia &&
         probEmpate > Math.max(probLocal, probVisitante)) {
@@ -83,6 +105,7 @@ class MatchClassifier {
     };
   }
 
+  // Source: Metodología Definitiva Progol.docx 
   clasificarPartido(partido) {
     const probs = [partido.prob_local, partido.prob_empate, partido.prob_visitante];
     const maxProb = Math.max(...probs);
@@ -119,11 +142,13 @@ class PortfolioGenerator {
       iteracionesOptimizador: 5000,
       temperaturaInicial: 0.80,
       tasaEnfriamiento: 0.995,
+      // Source: Metodología Definitiva Progol.docx 
       simulacionesMonteCarlo: 5000,
       ...config
     };
   }
 
+  // Source: Metodología Definitiva Progol.docx 
   generateCoreQuinielas(partidosClasificados) {
     const coreQuinielas = [];
     
@@ -158,11 +183,11 @@ class PortfolioGenerator {
     for (const partido of partidosClasificados) {
       let resultado;
       
+      // Source: Metodología Definitiva Progol.docx 
       if (partido.clasificacion === 'Ancla') {
         resultado = partido.resultadoSugerido;
       } else if (partido.clasificacion === 'TendenciaEmpate' && empatesActuales < PROGOL_CONFIG.EMPATES_MAX) {
         resultado = 'E';
-        empatesActuales++;
       } else {
         resultado = partido.resultadoSugerido;
       }
@@ -174,15 +199,18 @@ class PortfolioGenerator {
     return quiniela;
   }
 
+  // Source: Metodología Definitiva Progol.docx 
   generateSatelliteQuinielas(partidosClasificados, quinielasCore, numSatelites) {
     const satelites = [];
     const numPares = Math.floor(numSatelites / 2);
     
     const partidosDivisor = partidosClasificados
       .map((p, i) => ({ ...p, index: i }))
+      // Source: Metodología Definitiva Progol.docx 
       .filter(p => p.clasificacion === 'Divisor');
     
     for (let par = 0; par < numPares; par++) {
+      // Source: Metodología Definitiva Progol.docx 
       const [satA, satB] = this.crearParSatelites(
         partidosClasificados,
         partidosDivisor,
@@ -208,6 +236,7 @@ class PortfolioGenerator {
     for (let i = 0; i < partidosClasificados.length; i++) {
       const partido = partidosClasificados[i];
       
+      // Source: Metodología Definitiva Progol.docx 
       if (i === partidoPrincipal) {
         quinielaA.push(partido.resultadoSugerido);
         quinielaB.push(this.getResultadoAlternativo(partido));
@@ -216,6 +245,7 @@ class PortfolioGenerator {
         quinielaA.push(resultado);
         quinielaB.push(resultado);
       } else {
+        // Introduce controlled randomness for diversity
         if (Math.random() < 0.3) {
           quinielaA.push(partido.resultadoSugerido);
           quinielaB.push(this.getResultadoAlternativo(partido));
@@ -281,6 +311,7 @@ class PortfolioGenerator {
     ];
     
     probs.sort((a, b) => b.prob - a.prob);
+    // Return the second most likely result for diversification
     return probs[1].resultado;
   }
 
@@ -288,6 +319,7 @@ class PortfolioGenerator {
     const empatesActuales = quiniela.filter(r => r === 'E').length;
     const quinielaAjustada = [...quiniela];
     
+    // Source: Metodología Definitiva Progol.docx 
     if (empatesActuales < PROGOL_CONFIG.EMPATES_MIN) {
       const empatesNecesarios = PROGOL_CONFIG.EMPATES_MIN - empatesActuales;
       const candidatos = [];
@@ -334,7 +366,8 @@ class PortfolioGenerator {
       }
     }
     
-    const numCambios = Math.min(2 + variacion, candidatos.length);
+    // Shuffle and pick a few to change for variety
+    const numCambios = Math.min(1 + variacion, candidatos.length);
     const indicesCambio = this.shuffleArray(candidatos).slice(0, numCambios);
     
     for (const idx of indicesCambio) {
@@ -353,6 +386,7 @@ class PortfolioGenerator {
     return shuffled;
   }
 
+  // Source: Metodología Definitiva Progol.docx 
   calcularProb11Plus(quiniela, partidosClasificados) {
     const probsAcierto = [];
     
@@ -371,6 +405,7 @@ class PortfolioGenerator {
     const numSimulaciones = this.config.simulacionesMonteCarlo;
     let aciertos11Plus = 0;
     
+    // Monte Carlo Simulation
     for (let sim = 0; sim < numSimulaciones; sim++) {
       let aciertos = 0;
       for (const prob of probsAcierto) {
@@ -391,49 +426,119 @@ class PortfolioGenerator {
     };
   }
 
+  // ==================== CORRECCIÓN DE CÓDIGO ====================
+  // La función de optimización ha sido reescrita para implementar correctamente
+  // el algoritmo GRASP-Annealing de dos fases descrito en la metodología.
+
+  // Source: Metodología Definitiva Progol.docx 
   optimizePortfolioGRASPAnnealing(quinielasIniciales, partidosClasificados, progressCallback) {
+    const validator = new PortfolioValidator();
     const config = this.config;
-    let mejorPortafolio = [...quinielasIniciales];
-    let mejorScore = this.evaluarPortafolio(mejorPortafolio);
+
+    // --- FASE 1: GRASP (Greedy Randomized Adaptive Search Procedure) ---
+    progressCallback({ phase: 'GRASP', message: 'Building candidate pool...', percentage: 0 });
+
+    const NUM_CANDIDATES = 1000; // Practical number of candidates
+    let candidatePool = [];
+
+    for (let i = 0; i < NUM_CANDIDATES; i++) {
+        let quiniela = this.crearQuinielaBase(partidosClasificados);
+        quiniela = this.aplicarVariacion(quiniela, partidosClasificados, Math.floor(Math.random() * 5));
+        quiniela = this.ajustarEmpates(quiniela, partidosClasificados);
+        
+        const quinielaObj = {
+            id: `Cand-${i}`,
+            tipo: 'Satelite',
+            resultados: quiniela,
+            empates: quiniela.filter(r => r === 'E').length,
+            prob_11_plus: this.calcularProb11Plus(quiniela, partidosClasificados),
+            distribucion: this.calcularDistribucion(quiniela)
+        };
+        candidatePool.push(quinielaObj);
+        
+        if (i % 50 === 0) {
+            progressCallback({ phase: 'GRASP', message: 'Building candidate pool...', percentage: (i / NUM_CANDIDATES) * 50 });
+        }
+    }
+
+    progressCallback({ phase: 'GRASP', message: 'Constructing portfolio...', percentage: 50 });
     
-    let temperatura = config.temperaturaInicial;
-    
-    for (let iter = 0; iter < config.iteracionesOptimizador; iter++) {
-      const vecinoPortafolio = this.generarVecino(mejorPortafolio, partidosClasificados);
-      const scoreVecino = this.evaluarPortafolio(vecinoPortafolio);
-      
-      const delta = scoreVecino - mejorScore;
-      
-      if (delta > 0 || Math.random() < Math.exp(delta / temperatura)) {
-        mejorPortafolio = vecinoPortafolio;
-        mejorScore = scoreVecino;
-      }
-      
-      temperatura *= config.tasaEnfriamiento;
-      
-      if (progressCallback && iter % 100 === 0) {
-        progressCallback({
-          iteracion: iter,
-          score: mejorScore,
-          porcentaje: (iter / config.iteracionesOptimizador) * 100
+    let constructedPortfolio = [...quinielasIniciales];
+    const ALPHA = 0.15; // Select randomly from top 15% of candidates
+
+    // Source: Metodología Definitiva Progol.docx 
+    while (constructedPortfolio.length < config.numQuinielas && candidatePool.length > 0) {
+        candidatePool.forEach(cand => {
+            const tempPortfolio = [...constructedPortfolio, cand];
+            cand.marginalGain = this.evaluarPortafolio(tempPortfolio) - this.evaluarPortafolio(constructedPortfolio);
         });
-      }
+
+        candidatePool.sort((a, b) => b.marginalGain - a.marginalGain);
+
+        const topN = Math.max(1, Math.floor(candidatePool.length * ALPHA));
+        const selectedIndex = Math.floor(Math.random() * topN);
+        const bestCandidate = candidatePool.splice(selectedIndex, 1)[0];
+        
+        constructedPortfolio.push(bestCandidate);
+    }
+    
+    // --- FASE 2: Simulated Annealing Refinement ---
+    let mejorPortafolio = constructedPortfolio;
+    let mejorScore = this.evaluarPortafolio(mejorPortafolio);
+    let temperatura = config.temperaturaInicial;
+
+    // Source: Metodología Definitiva Progol.docx 
+    for (let iter = 0; iter < config.iteracionesOptimizador; iter++) {
+        const vecinoPortafolio = this.generarVecino(mejorPortafolio, partidosClasificados);
+        
+        // **FIX**: Validate the entire portfolio against the checklist.
+        // If it's not valid, reject it immediately.
+        const validationResult = validator.validatePortfolio(vecinoPortafolio);
+        if (!validationResult.es_valido) {
+            temperatura *= config.tasaEnfriamiento;
+            continue;
+        }
+
+        const scoreVecino = this.evaluarPortafolio(vecinoPortafolio);
+        const delta = scoreVecino - mejorScore;
+        
+        // Annealing acceptance criteria
+        if (delta > 0 || Math.random() < Math.exp(delta / temperatura)) {
+            mejorPortafolio = vecinoPortafolio;
+            mejorScore = scoreVecino;
+        }
+        
+        temperatura *= config.tasaEnfriamiento;
+        
+        if (progressCallback && iter % 50 === 0) {
+            progressCallback({
+                phase: 'Annealing',
+                message: 'Refining portfolio...',
+                iteracion: iter,
+                score: mejorScore,
+                porcentaje: (iter / config.iteracionesOptimizador) * 100
+            });
+        }
     }
     
     return mejorPortafolio;
   }
 
+
+  // ==================== CORRECCIÓN DE CÓDIGO ====================
+  // La función de evaluación ha sido corregida para alinearse con el objetivo
+  // principal de la metodología: maximizar Pr[>=11]. Los otros factores
+  // ahora se usan como restricciones duras en el validador.
+
+  // Source: Metodología Definitiva Progol.docx 
   evaluarPortafolio(quinielas) {
-    if (!quinielas.length) return 0;
+    if (!quinielas || quinielas.length === 0) return 0;
     
     const probs11Plus = quinielas.map(q => q.prob_11_plus || 0);
+    // The objective function is to maximize the probability of the portfolio getting at least one 11+ hit
     const probPortafolio = 1 - probs11Plus.reduce((acc, prob) => acc * (1 - prob), 1);
     
-    const diversidad = this.calcularDiversidadPortafolio(quinielas);
-    const distribucion = this.evaluarDistribucion(quinielas);
-    const concentracion = this.evaluarConcentracion(quinielas);
-    
-    return probPortafolio * 0.5 + diversidad * 0.2 + distribucion * 0.2 + concentracion * 0.1;
+    return probPortafolio;
   }
 
   calcularDiversidadPortafolio(quinielas) {
@@ -457,63 +562,11 @@ class PortfolioGenerator {
     return q1.reduce((acc, val, i) => acc + (val !== q2[i] ? 1 : 0), 0);
   }
 
-  evaluarDistribucion(quinielas) {
-    const totalPredicciones = quinielas.length * 14;
-    const conteos = { L: 0, E: 0, V: 0 };
-    
-    quinielas.forEach(q => {
-      q.resultados.forEach(r => conteos[r]++);
-    });
-    
-    const distribucion = {
-      L: conteos.L / totalPredicciones,
-      E: conteos.E / totalPredicciones,
-      V: conteos.V / totalPredicciones
-    };
-    
-    let score = 0;
-    Object.keys(PROGOL_CONFIG.RANGOS_HISTORICOS).forEach(resultado => {
-      const [min, max] = PROGOL_CONFIG.RANGOS_HISTORICOS[resultado];
-      const valor = distribucion[resultado];
-      if (valor >= min && valor <= max) {
-        score += 1;
-      } else {
-        const distanciaMin = Math.max(0, min - valor);
-        const distanciaMax = Math.max(0, valor - max);
-        score += Math.max(0, 1 - (distanciaMin + distanciaMax) * 10);
-      }
-    });
-    
-    return score / 3;
-  }
-
-  evaluarConcentracion(quinielas) {
-    let penalizacion = 0;
-    const numQuinielas = quinielas.length;
-    
-    for (let partidoIdx = 0; partidoIdx < 14; partidoIdx++) {
-      const conteos = { L: 0, E: 0, V: 0 };
-      
-      quinielas.forEach(q => {
-        if (partidoIdx < q.resultados.length) {
-          conteos[q.resultados[partidoIdx]]++;
-        }
-      });
-      
-      const maxConcentracion = Math.max(...Object.values(conteos)) / numQuinielas;
-      const limite = partidoIdx < 3 ? PROGOL_CONFIG.CONCENTRACION_MAX_INICIAL : PROGOL_CONFIG.CONCENTRACION_MAX_GENERAL;
-      
-      if (maxConcentracion > limite) {
-        penalizacion += (maxConcentracion - limite) * 2;
-      }
-    }
-    
-    return Math.max(0, 1 - penalizacion);
-  }
-
   generarVecino(portafolio, partidosClasificados) {
     const nuevoPortafolio = portafolio.map(q => ({ ...q, resultados: [...q.resultados] }));
     
+    if (nuevoPortafolio.length === 0) return [];
+
     const quinielaIdx = Math.floor(Math.random() * nuevoPortafolio.length);
     const quiniela = nuevoPortafolio[quinielaIdx];
     
@@ -525,7 +578,10 @@ class PortfolioGenerator {
       const { index } = partidosNoAncla[Math.floor(Math.random() * partidosNoAncla.length)];
       const partido = partidosClasificados[index];
       
-      const alternativo = this.getResultadoAlternativo(partido);
+      const opciones = ['L', 'E', 'V'];
+      const resultadoActual = quiniela.resultados[index];
+      const alternativo = opciones.filter(o => o !== resultadoActual)[Math.floor(Math.random() * 2)];
+      
       quiniela.resultados[index] = alternativo;
       
       quiniela.resultados = this.ajustarEmpates(quiniela.resultados, partidosClasificados);
@@ -539,6 +595,7 @@ class PortfolioGenerator {
 }
 
 class PortfolioValidator {
+  // Source: Metodología Definitiva Progol.docx 
   validatePortfolio(quinielas) {
     const validacion = {
       es_valido: true,
@@ -560,14 +617,12 @@ class PortfolioValidator {
 
     if (validacion.errores.length > 0) {
       validacion.es_valido = false;
-    } else if (validacion.warnings.length > 3) {
-      validacion.es_valido = false;
-      validacion.errores.push("Demasiadas advertencias en la validación");
     }
 
     return validacion;
   }
 
+  // Source: Metodología Definitiva Progol.docx 
   validarDistribucionGlobal(quinielas, validacion) {
     const totalPredicciones = quinielas.length * 14;
     const conteos = { L: 0, E: 0, V: 0 };
@@ -585,66 +640,33 @@ class PortfolioValidator {
     validacion.metricas.distribucion_global = distribucionGlobal;
 
     Object.entries(distribucionGlobal).forEach(([resultado, proporcion]) => {
+      // Source: Metodología Definitiva Progol.docx 
       const [minVal, maxVal] = PROGOL_CONFIG.RANGOS_HISTORICOS[resultado];
 
-      if (proporcion < minVal) {
-        const diferencia = minVal - proporcion;
-        if (diferencia > 0.03) {
-          validacion.errores.push(
-            `Distribución ${resultado}: ${(proporcion * 100).toFixed(1)}% muy por debajo del mínimo ${(minVal * 100).toFixed(1)}%`
-          );
-        } else {
-          validacion.warnings.push(
-            `Distribución ${resultado}: ${(proporcion * 100).toFixed(1)}% ligeramente bajo (mín: ${(minVal * 100).toFixed(1)}%)`
-          );
-        }
-      } else if (proporcion > maxVal) {
-        const diferencia = proporcion - maxVal;
-        if (diferencia > 0.03) {
-          validacion.errores.push(
-            `Distribución ${resultado}: ${(proporcion * 100).toFixed(1)}% muy por encima del máximo ${(maxVal * 100).toFixed(1)}%`
-          );
-        } else {
-          validacion.warnings.push(
-            `Distribución ${resultado}: ${(proporcion * 100).toFixed(1)}% ligeramente alto (máx: ${(maxVal * 100).toFixed(1)}%)`
-          );
-        }
+      if (proporcion < minVal || proporcion > maxVal) {
+        // This is a hard constraint now, so it generates an error
+        validacion.errores.push(
+          `Distribución global de '${resultado}' (${(proporcion * 100).toFixed(1)}%) fuera del rango [${(minVal * 100).toFixed(1)}% - ${(maxVal * 100).toFixed(1)}%]`
+        );
       }
     });
   }
 
+  // Source: Metodología Definitiva Progol.docx 
   validarEmpatesIndividuales(quinielas, validacion) {
-    const empatesPorQuiniela = [];
-    const quinielasProblematicas = [];
-
     quinielas.forEach((quiniela, i) => {
       const empates = quiniela.resultados.filter(r => r === 'E').length;
-      empatesPorQuiniela.push(empates);
 
-      if (empates < PROGOL_CONFIG.EMPATES_MIN) {
-        quinielasProblematicas.push(`Q-${i + 1}: ${empates} empates (mínimo ${PROGOL_CONFIG.EMPATES_MIN})`);
-      } else if (empates > PROGOL_CONFIG.EMPATES_MAX) {
-        quinielasProblematicas.push(`Q-${i + 1}: ${empates} empates (máximo ${PROGOL_CONFIG.EMPATES_MAX})`);
+      if (empates < PROGOL_CONFIG.EMPATES_MIN || empates > PROGOL_CONFIG.EMPATES_MAX) {
+        validacion.errores.push(`Quiniela ${quiniela.id || i+1} tiene ${empates} empates, fuera del rango [${PROGOL_CONFIG.EMPATES_MIN}-${PROGOL_CONFIG.EMPATES_MAX}]`);
       }
     });
-
-    validacion.metricas.empates_promedio = empatesPorQuiniela.reduce((a, b) => a + b, 0) / empatesPorQuiniela.length;
-    validacion.metricas.empates_rango = [Math.min(...empatesPorQuiniela), Math.max(...empatesPorQuiniela)];
-
-    if (quinielasProblematicas.length > 0) {
-      if (quinielasProblematicas.length > quinielas.length * 0.1) {
-        validacion.errores.push(`Muchas quinielas fuera del rango de empates: ${quinielasProblematicas.slice(0, 5).join(', ')}`);
-      } else {
-        validacion.warnings.push(...quinielasProblematicas);
-      }
-    }
   }
 
+  // Source: Metodología Definitiva Progol.docx 
   validarConcentracion(quinielas, validacion) {
     const numQuinielas = quinielas.length;
-    if (numQuinielas === 0) return;
-
-    const concentracionesProblematicas = [];
+    if (numQuinielas < 2) return; // Concentration not meaningful for a single quiniela
 
     for (let partidoIdx = 0; partidoIdx < 14; partidoIdx++) {
       const conteos = { L: 0, E: 0, V: 0 };
@@ -664,17 +686,9 @@ class PortfolioValidator {
         const resultadoConcentrado = Object.keys(conteos).reduce((a, b) => 
           conteos[a] > conteos[b] ? a : b
         );
-        concentracionesProblematicas.push(
-          `Partido ${partidoIdx + 1}: ${(maxConcentracion * 100).toFixed(0)}% en '${resultadoConcentrado}' (límite: ${(limiteAplicable * 100).toFixed(0)}%)`
+        validacion.errores.push(
+          `Exceso de concentración en Partido ${partidoIdx + 1}: ${(maxConcentracion * 100).toFixed(0)}% en '${resultadoConcentrado}' (límite: ${(limiteAplicable * 100).toFixed(0)}%)`
         );
-      }
-    }
-
-    if (concentracionesProblematicas.length > 0) {
-      if (concentracionesProblematicas.length > 3) {
-        validacion.errores.push(`Múltiples violaciones de concentración: ${concentracionesProblematicas.slice(0, 3).join(', ')}`);
-      } else {
-        validacion.warnings.push(...concentracionesProblematicas);
       }
     }
   }
@@ -688,6 +702,7 @@ class PortfolioValidator {
     validacion.metricas.prob_11_plus_max = Math.max(...probs11Plus);
     validacion.metricas.prob_11_plus_min = Math.min(...probs11Plus);
 
+    // Source: Metodología Definitiva Progol.docx 
     const probPortafolio = 1 - probs11Plus.reduce((acc, prob) => acc * (1 - prob), 1);
     validacion.metricas.prob_portafolio_11_plus = probPortafolio;
 
@@ -696,6 +711,7 @@ class PortfolioValidator {
     validacion.metricas.eficiencia = probPortafolio / (costoTotal / 1000);
   }
 }
+
 
 // ==================== DATOS DE MUESTRA ====================
 
@@ -741,6 +757,7 @@ const createSampleData = () => {
         prob_empate: probEmpate,
         prob_visitante: probVisitante,
         es_final: withFinals && (i === 0 || i === 2),
+        // Source: Metodología Definitiva Progol.docx 
         forma_diferencia: Math.floor((Math.random() - 0.5) * 4),
         lesiones_impact: Math.floor((Math.random() - 0.5) * 2)
       };
@@ -814,7 +831,7 @@ export default function ProgolOptimizerApp() {
 
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 500));
       const classifier = new MatchClassifier();
       const clasificados = classifier.classifyMatches(partidosRegular);
       setPartidosClasificados(clasificados);
@@ -834,7 +851,7 @@ export default function ProgolOptimizerApp() {
 
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 500));
       const generator = new PortfolioGenerator(42, config);
       const core = generator.generateCoreQuinielas(partidosClasificados);
       setQuinielasCore(core);
@@ -854,7 +871,7 @@ export default function ProgolOptimizerApp() {
 
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 500));
       const generator = new PortfolioGenerator(42, config);
       const numSatelites = config.numQuinielas - 4;
       const satelites = generator.generateSatelliteQuinielas(
@@ -872,24 +889,25 @@ export default function ProgolOptimizerApp() {
   }, [quinielasCore, partidosClasificados, config]);
 
   const ejecutarOptimizacionAvanzada = useCallback(async () => {
-    if (quinielasCore.length === 0 || quinielasSatelites.length === 0) {
-      alert('Necesitas generar Core y Satélites primero');
+    if (quinielasCore.length === 0) {
+      alert('Necesitas generar las quinielas Core primero');
       return;
     }
 
     setLoading(true);
-    setOptimizationProgress({ iteracion: 0, score: 0, porcentaje: 0 });
+    setOptimizationProgress({ phase: 'Inicio', message: 'Iniciando...', iteracion: 0, score: 0, porcentaje: 0 });
     
     try {
       const generator = new PortfolioGenerator(42, config);
       const validator = new PortfolioValidator();
       
-      const candidatas = [...quinielasCore, ...quinielasSatelites];
+      const quinielasParaOptimizar = [...quinielasCore, ...quinielasSatelites];
       
       await new Promise(resolve => {
+        // Use setTimeout to allow UI to update before blocking with intense computation
         setTimeout(() => {
           const quinielasOptimizadas = generator.optimizePortfolioGRASPAnnealing(
-            candidatas,
+            quinielasCore, // Pass only Core to start the GRASP construction
             partidosClasificados,
             (progress) => {
               setOptimizationProgress(progress);
@@ -901,17 +919,16 @@ export default function ProgolOptimizerApp() {
           setQuinielasFinales(quinielasOptimizadas);
           setValidacion(resultadoValidacion);
           
-          resolve();
+          resolve(resultadoValidacion);
         }, 100);
+      }).then((resultadoValidacion) => {
+        if (resultadoValidacion?.es_valido) {
+            alert(`✅ Optimización completada!\n🎯 Pr[≥11] Portafolio: ${(resultadoValidacion.metricas.prob_portafolio_11_plus * 100).toFixed(1)}%`);
+        } else {
+            alert(`⚠️ Optimización completada con errores de validación. Revise los resultados. Errores: ${resultadoValidacion.errores.slice(0, 2).join(', ')}`);
+        }
       });
 
-      setOptimizationProgress(null);
-      
-      if (validacion?.es_valido) {
-        alert(`✅ Optimización completada!\n🎯 Pr[≥11] Portafolio: ${(validacion.metricas.prob_portafolio_11_plus * 100).toFixed(1)}%`);
-      } else {
-        alert('⚠️ Optimización completada con advertencias');
-      }
     } catch (error) {
       console.error('Error en optimización:', error);
       alert('Error en optimización avanzada');
@@ -919,29 +936,33 @@ export default function ProgolOptimizerApp() {
       setLoading(false);
       setOptimizationProgress(null);
     }
-  }, [quinielasCore, quinielasSatelites, partidosClasificados, config, validacion]);
+  }, [quinielasCore, quinielasSatelites, partidosClasificados, config]);
+
 
   const procesarArchivoCSV = useCallback((file, tipo) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const csv = e.target.result;
-        const lines = csv.split('\n').filter(line => line.trim() && !line.startsWith('#'));
+        const lines = csv.split(/[\r\n]+/).filter(line => line.trim() && !line.startsWith('#'));
         const headers = lines[0].split(',').map(h => h.trim());
         
         const partidos = [];
         for (let i = 1; i < lines.length; i++) {
           const values = lines[i].split(',').map(v => v.trim());
           if (values.length >= 5) {
-            const probTotal = parseFloat(values[2]) + parseFloat(values[3]) + parseFloat(values[4]);
+            const prob_local = parseFloat(values[2]);
+            const prob_empate = parseFloat(values[3]);
+            const prob_visitante = parseFloat(values[4]);
+            const probTotal = prob_local + prob_empate + prob_visitante;
             
             partidos.push({
               local: values[0],
               visitante: values[1],
-              prob_local: parseFloat(values[2]) / probTotal,
-              prob_empate: parseFloat(values[3]) / probTotal,
-              prob_visitante: parseFloat(values[4]) / probTotal,
-              es_final: values[5] === 'TRUE' || values[5] === 'true',
+              prob_local: prob_local / probTotal,
+              prob_empate: prob_empate / probTotal,
+              prob_visitante: prob_visitante / probTotal,
+              es_final: (values[5] || 'false').toLowerCase() === 'true',
               forma_diferencia: parseInt(values[6]) || 0,
               lesiones_impact: parseInt(values[7]) || 0
             });
@@ -954,7 +975,8 @@ export default function ProgolOptimizerApp() {
           setPartidosRevancha(partidos.slice(0, 7));
         }
       } catch (error) {
-        alert('Error procesando el archivo CSV');
+        console.error("Error parsing CSV:", error);
+        alert('Error procesando el archivo CSV. Verifique el formato.');
       }
     };
     reader.readAsText(file);
@@ -974,7 +996,7 @@ export default function ProgolOptimizerApp() {
             </div>
             
             <div className="flex items-center gap-4 text-sm">
-              <span className="text-gray-500">v1.0.0</span>
+              <span className="text-gray-500">v1.1.0 (Fixed)</span>
               <div className={`px-2 py-1 rounded text-xs ${
                 Object.values(progress).filter(Boolean).length >= 3 ? 
                 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
@@ -1030,7 +1052,7 @@ export default function ProgolOptimizerApp() {
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md font-medium transition-colors ${
                 activeTab === id
                   ? 'bg-white text-blue-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
@@ -1231,7 +1253,7 @@ export default function ProgolOptimizerApp() {
                     }`}
                   >
                     <Brain className="w-4 h-4" />
-                    {loading && activeTab === 'generacion' ? 'Clasificando...' : 'Clasificar Partidos'}
+                    {loading && activeTab === 'generacion' ? 'Clasificando...' : '1. Clasificar Partidos'}
                   </button>
 
                   <button
@@ -1244,7 +1266,7 @@ export default function ProgolOptimizerApp() {
                     }`}
                   >
                     <Target className="w-4 h-4" />
-                    {loading && activeTab === 'generacion' ? 'Generando...' : 'Generar Core (4)'}
+                    {loading && activeTab === 'generacion' ? 'Generando...' : '2. Generar Core (4)'}
                   </button>
 
                   <button
@@ -1257,15 +1279,15 @@ export default function ProgolOptimizerApp() {
                     }`}
                   >
                     <RefreshCw className="w-4 h-4" />
-                    {loading && activeTab === 'generacion' ? 'Generando...' : `Generar Satélites (${config.numQuinielas - 4})`}
+                    {loading && activeTab === 'generacion' ? 'Generando...' : `3. Generar Satélites (${config.numQuinielas - 4})`}
                   </button>
 
                   <button
                     onClick={() => setShowAdvanced(!showAdvanced)}
-                    className="flex items-center justify-center gap-2 px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                   >
                     <Settings className="w-4 h-4" />
-                    {showAdvanced ? 'Ocultar Config' : 'Config Avanzada'}
+                    {showAdvanced ? 'Ocultar Config' : 'Config. Avanzada'}
                   </button>
                 </div>
               </div>
@@ -1276,13 +1298,13 @@ export default function ProgolOptimizerApp() {
                 <div className="p-6">
                   <h3 className="text-lg font-semibold mb-2 flex items-center gap-2 text-orange-700">
                     <Gauge className="w-5 h-5" />
-                    Parámetros de Optimización Monte Carlo
+                    Parámetros de Optimización (GRASP-Annealing)
                   </h3>
                   <p className="text-gray-600 mb-6">
-                    Configuración avanzada del algoritmo GRASP-Annealing
+                    Ajustes avanzados para el algoritmo de optimización. Se recomienda precaución.
                   </p>
                   
-                  <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Número de quinielas: {config.numQuinielas}
@@ -1290,15 +1312,11 @@ export default function ProgolOptimizerApp() {
                       <input
                         type="range"
                         min="5"
-                        max="30"
+                        max="40"
                         value={config.numQuinielas}
                         onChange={(e) => setConfig(prev => ({ ...prev, numQuinielas: parseInt(e.target.value) }))}
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                       />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>5</span>
-                        <span>30</span>
-                      </div>
                     </div>
 
                     <div>
@@ -1307,55 +1325,13 @@ export default function ProgolOptimizerApp() {
                       </label>
                       <input
                         type="range"
-                        min="500"
-                        max="5000"
-                        step="100"
+                        min="1000"
+                        max="10000"
+                        step="500"
                         value={config.iteracionesOptimizador}
                         onChange={(e) => setConfig(prev => ({ ...prev, iteracionesOptimizador: parseInt(e.target.value) }))}
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                       />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>500</span>
-                        <span>5000</span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Temperatura inicial: {config.temperaturaInicial.toFixed(2)}
-                      </label>
-                      <input
-                        type="range"
-                        min="0.10"
-                        max="1.00"
-                        step="0.01"
-                        value={config.temperaturaInicial}
-                        onChange={(e) => setConfig(prev => ({ ...prev, temperaturaInicial: parseFloat(e.target.value) }))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                      />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>0.10</span>
-                        <span>1.00</span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tasa de enfriamiento: {config.tasaEnfriamiento.toFixed(3)}
-                      </label>
-                      <input
-                        type="range"
-                        min="0.990"
-                        max="0.999"
-                        step="0.001"
-                        value={config.tasaEnfriamiento}
-                        onChange={(e) => setConfig(prev => ({ ...prev, tasaEnfriamiento: parseFloat(e.target.value) }))}
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                      />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>0.990</span>
-                        <span>0.999</span>
-                      </div>
                     </div>
 
                     <div>
@@ -1365,35 +1341,31 @@ export default function ProgolOptimizerApp() {
                       <input
                         type="range"
                         min="1000"
-                        max="5000"
-                        step="100"
+                        max="10000"
+                        step="500"
                         value={config.simulacionesMonteCarlo}
                         onChange={(e) => setConfig(prev => ({ ...prev, simulacionesMonteCarlo: parseInt(e.target.value) }))}
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                       />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>1000</span>
-                        <span>5000</span>
-                      </div>
                     </div>
+                  </div>
 
-                    <div className="pt-4 border-t border-orange-200">
-                      <button
-                        onClick={ejecutarOptimizacionAvanzada}
-                        disabled={quinielasCore.length === 0 || quinielasSatelites.length === 0 || loading}
-                        className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-lg font-bold text-lg transition-colors ${
-                          quinielasCore.length > 0 && quinielasSatelites.length > 0 && !loading
-                            ? 'bg-red-600 text-white hover:bg-red-700 shadow-lg'
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        }`}
-                      >
-                        <Zap className="w-6 h-6" />
-                        {loading ? 'Ejecutando Optimización...' : '🚀 Iniciar Optimización Definitiva'}
-                      </button>
-                      <p className="text-center text-sm text-orange-600 mt-2">
-                        Esto ejecutará {config.iteracionesOptimizador} iteraciones con {config.simulacionesMonteCarlo} simulaciones Monte Carlo
-                      </p>
-                    </div>
+                  <div className="pt-6 mt-6 border-t border-orange-200">
+                    <button
+                      onClick={ejecutarOptimizacionAvanzada}
+                      disabled={quinielasCore.length === 0 || loading}
+                      className={`w-full flex items-center justify-center gap-2 px-6 py-4 rounded-lg font-bold text-lg transition-colors ${
+                        quinielasCore.length > 0 && !loading
+                          ? 'bg-red-600 text-white hover:bg-red-700 shadow-lg'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      <Zap className="w-6 h-6" />
+                      {loading ? 'Ejecutando Optimización...' : '🚀 4. Iniciar Optimización Definitiva'}
+                    </button>
+                    <p className="text-center text-sm text-orange-600 mt-2">
+                      Este proceso es intensivo. Ejecutará el algoritmo GRASP-Annealing completo.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1402,17 +1374,21 @@ export default function ProgolOptimizerApp() {
             {optimizationProgress && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Zap className="w-4 h-4 text-blue-600" />
+                  <Zap className="w-4 h-4 text-blue-600 animate-pulse" />
                   <span className="font-medium text-blue-700">Optimización en progreso...</span>
                 </div>
+                <div className="text-sm text-blue-700 font-semibold mb-2">{optimizationProgress.phase}: {optimizationProgress.message}</div>
                 <div className="w-full bg-blue-200 rounded-full h-3">
                   <div 
                     className="bg-blue-600 h-3 rounded-full transition-all duration-300"
                     style={{ width: `${optimizationProgress.porcentaje}%` }}
                   />
                 </div>
-                <div className="text-sm text-blue-600 mt-2">
-                  Iteración {optimizationProgress.iteracion} - Score: {optimizationProgress.score.toFixed(4)} - {optimizationProgress.porcentaje.toFixed(1)}%
+                <div className="text-xs text-blue-600 mt-2">
+                  {optimizationProgress.phase === 'Annealing' ? 
+                    `Iteración ${optimizationProgress.iteracion} - Score: ${optimizationProgress.score.toFixed(4)} - ${optimizationProgress.porcentaje.toFixed(1)}%` :
+                    `${optimizationProgress.porcentaje.toFixed(1)}% completado`
+                  }
                 </div>
               </div>
             )}
@@ -1422,7 +1398,7 @@ export default function ProgolOptimizerApp() {
                 <div className="p-6">
                   <h3 className="text-lg font-semibold mb-4">🎯 Clasificación de Partidos</h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                     {['Ancla', 'Divisor', 'TendenciaEmpate', 'Neutro'].map(tipo => {
                       const count = partidosClasificados.filter(p => p.clasificacion === tipo).length;
                       const color = {
@@ -1433,28 +1409,12 @@ export default function ProgolOptimizerApp() {
                       }[tipo];
                       
                       return (
-                        <div key={tipo} className="text-center">
-                          <div className={`text-lg font-bold ${color}`}>{count}</div>
+                        <div key={tipo} className="text-center p-2 rounded-lg bg-gray-50">
+                          <div className={`text-2xl font-bold ${color}`}>{count}</div>
                           <div className="text-sm text-gray-600">{tipo}</div>
                         </div>
                       );
                     })}
-                  </div>
-                  
-                  <div className="space-y-1 max-h-32 overflow-y-auto text-sm">
-                    {partidosClasificados.map((partido, i) => (
-                      <div key={i} className="flex justify-between items-center">
-                        <span>{partido.local} vs {partido.visitante}</span>
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          partido.clasificacion === 'Ancla' ? 'bg-red-100 text-red-600' :
-                          partido.clasificacion === 'Divisor' ? 'bg-yellow-100 text-yellow-600' :
-                          partido.clasificacion === 'TendenciaEmpate' ? 'bg-blue-100 text-blue-600' :
-                          'bg-gray-100 text-gray-600'
-                        }`}>
-                          {partido.clasificacion}
-                        </span>
-                      </div>
-                    ))}
                   </div>
                 </div>
               </div>
@@ -1475,9 +1435,9 @@ export default function ProgolOptimizerApp() {
                 </div>
               </div>
 
-              <div className={`bg-white rounded-lg shadow-sm border p-4 text-center ${quinielasFinales.length > 0 ? 'border-orange-200 bg-orange-50' : ''}`}>
-                <CheckCircle2 className={`w-8 h-8 mx-auto mb-2 ${quinielasFinales.length > 0 ? 'text-orange-600' : 'text-gray-400'}`} />
-                <div className={`font-medium ${quinielasFinales.length > 0 ? 'text-orange-700' : 'text-gray-600'}`}>
+              <div className={`bg-white rounded-lg shadow-sm border p-4 text-center ${quinielasFinales.length > 0 ? 'border-red-200 bg-red-50' : ''}`}>
+                <CheckCircle2 className={`w-8 h-8 mx-auto mb-2 ${quinielasFinales.length > 0 ? 'text-red-600' : 'text-gray-400'}`} />
+                <div className={`font-medium ${quinielasFinales.length > 0 ? 'text-red-700' : 'text-gray-600'}`}>
                   Portafolio Final: {quinielasFinales.length}/{config.numQuinielas}
                 </div>
               </div>
@@ -1491,11 +1451,11 @@ export default function ProgolOptimizerApp() {
               <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
                 <BarChart3 className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-medium text-gray-600 mb-2">No hay resultados aún</h3>
-                <p className="text-gray-500">Genera las quinielas primero para ver el análisis</p>
+                <p className="text-gray-500">Completa la generación y optimización para ver el análisis</p>
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
                     <div className="text-2xl font-bold text-blue-600">{quinielasFinales.length}</div>
                     <div className="text-sm text-gray-600">Total Quinielas</div>
@@ -1516,7 +1476,7 @@ export default function ProgolOptimizerApp() {
                   </div>
                   
                   <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
-                    <div className="text-2xl font-bold text-orange-600">
+                    <div className="text-2xl font-bold text-red-600">
                       {validacion?.metricas?.prob_portafolio_11_plus ? 
                         (validacion.metricas.prob_portafolio_11_plus * 100).toFixed(1) : '0.0'}%
                     </div>
@@ -1530,18 +1490,13 @@ export default function ProgolOptimizerApp() {
                     
                     <div className="grid grid-cols-3 gap-4">
                       {['L', 'E', 'V'].map(resultado => {
-                        const totalPredicciones = quinielasFinales.length * 14;
-                        const conteos = { L: 0, E: 0, V: 0 };
-                        quinielasFinales.forEach(q => {
-                          q.resultados.forEach(r => conteos[r]++);
-                        });
-                        const actual = conteos[resultado] / totalPredicciones;
+                        const actual = validacion?.metricas?.distribucion_global?.[resultado] || 0;
                         const target = PROGOL_CONFIG.DISTRIBUCION_HISTORICA[resultado];
                         const [min, max] = PROGOL_CONFIG.RANGOS_HISTORICOS[resultado];
                         const enRango = actual >= min && actual <= max;
                         
                         return (
-                          <div key={resultado} className="text-center">
+                          <div key={resultado} className="text-center p-2 rounded-lg bg-gray-50">
                             <div className={`text-lg font-bold ${enRango ? 'text-green-600' : 'text-red-600'}`}>
                               {(actual * 100).toFixed(1)}%
                             </div>
@@ -1549,10 +1504,7 @@ export default function ProgolOptimizerApp() {
                               {resultado === 'L' ? 'Locales' : resultado === 'E' ? 'Empates' : 'Visitantes'}
                             </div>
                             <div className="text-xs text-gray-500">
-                              Target: {(target * 100).toFixed(1)}% ({(min * 100).toFixed(1)}-{(max * 100).toFixed(1)}%)
-                            </div>
-                            <div className={`text-xs ${enRango ? 'text-green-600' : 'text-red-600'}`}>
-                              {enRango ? '✓ En rango' : '✗ Fuera de rango'}
+                              Rango: ({(min * 100).toFixed(0)}-{(max * 100).toFixed(0)}%)
                             </div>
                           </div>
                         );
@@ -1568,28 +1520,23 @@ export default function ProgolOptimizerApp() {
                         {validacion.es_valido ? (
                           <CheckCircle2 className="w-5 h-5 text-green-600" />
                         ) : (
-                          <div className="w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center">
-                            <span className="text-white text-xs">!</span>
-                          </div>
+                           <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white font-bold text-sm">!</div>
                         )}
-                        Estado de Validación
+                        Estado de Validación del Portafolio
                       </h3>
                       
-                      <div className={`p-4 rounded-lg ${validacion.es_valido ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'}`}>
-                        <div className={`font-medium ${validacion.es_valido ? 'text-green-700' : 'text-yellow-700'}`}>
-                          {validacion.es_valido ? '✅ Portafolio válido' : '⚠️ Portafolio con advertencias'}
+                      <div className={`p-4 rounded-lg ${validacion.es_valido ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                        <div className={`font-medium ${validacion.es_valido ? 'text-green-700' : 'text-red-700'}`}>
+                          {validacion.es_valido ? '✅ Portafolio Válido' : '❌ Portafolio Inválido'}
                         </div>
                         
                         {validacion.warnings.length > 0 && (
                           <div className="mt-2">
                             <div className="text-sm font-medium text-yellow-700 mb-1">Advertencias:</div>
-                            <ul className="text-sm text-yellow-600 space-y-1">
-                              {validacion.warnings.slice(0, 3).map((warning, i) => (
-                                <li key={i}>• {warning}</li>
+                            <ul className="text-sm text-yellow-600 list-disc list-inside">
+                              {validacion.warnings.map((warning, i) => (
+                                <li key={i}>{warning}</li>
                               ))}
-                              {validacion.warnings.length > 3 && (
-                                <li>• ... y {validacion.warnings.length - 3} más</li>
-                              )}
                             </ul>
                           </div>
                         )}
@@ -1597,9 +1544,9 @@ export default function ProgolOptimizerApp() {
                         {validacion.errores.length > 0 && (
                           <div className="mt-2">
                             <div className="text-sm font-medium text-red-700 mb-1">Errores:</div>
-                            <ul className="text-sm text-red-600 space-y-1">
+                            <ul className="text-sm text-red-600 list-disc list-inside">
                               {validacion.errores.map((error, i) => (
-                                <li key={i}>• {error}</li>
+                                <li key={i}>{error}</li>
                               ))}
                             </ul>
                           </div>
@@ -1611,13 +1558,13 @@ export default function ProgolOptimizerApp() {
 
                 <div className="bg-white rounded-lg shadow-sm border">
                   <div className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">📋 Todas las Quinielas</h3>
+                    <h3 className="text-lg font-semibold mb-4">📋 Portafolio Final de Quinielas</h3>
                     
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b">
-                            <th className="text-left p-2">Q</th>
+                            <th className="text-left p-2">#</th>
                             <th className="text-left p-2">Tipo</th>
                             {Array.from({length: 14}, (_, i) => (
                               <th key={i} className="text-center p-1 w-8">P{i+1}</th>
@@ -1627,10 +1574,10 @@ export default function ProgolOptimizerApp() {
                           </tr>
                         </thead>
                         <tbody>
-                          {quinielasFinales.slice(0, 10).map((quiniela, i) => (
+                          {quinielasFinales.map((quiniela, i) => (
                             <tr key={i} className="border-b hover:bg-gray-50">
-                              <td className="p-2 font-medium">Q-{i+1}</td>
-                              <td className={`p-2 text-xs ${
+                              <td className="p-2 font-medium">{quiniela.id}</td>
+                              <td className={`p-2 text-xs font-semibold ${
                                 quiniela.tipo === 'Core' ? 'text-green-600' : 'text-purple-600'
                               }`}>
                                 {quiniela.tipo}
@@ -1649,12 +1596,6 @@ export default function ProgolOptimizerApp() {
                           ))}
                         </tbody>
                       </table>
-                      
-                      {quinielasFinales.length > 10 && (
-                        <div className="text-center p-4 text-gray-500 text-sm">
-                          Mostrando las primeras 10 de {quinielasFinales.length} quinielas
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -1669,7 +1610,7 @@ export default function ProgolOptimizerApp() {
               <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
                 <FileDown className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-medium text-gray-600 mb-2">No hay datos para exportar</h3>
-                <p className="text-gray-500">Genera las quinielas primero para poder exportar</p>
+                <p className="text-gray-500">Genera y optimiza un portafolio para poder exportarlo</p>
               </div>
             ) : (
               <>
@@ -1680,14 +1621,14 @@ export default function ProgolOptimizerApp() {
                       Exportación de Resultados
                     </h2>
                     <p className="text-gray-600 mb-6">
-                      Descarga las quinielas en diferentes formatos
+                      Descarga el portafolio final en diferentes formatos.
                     </p>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <button
                         onClick={() => {
                           const csvContent = generateCSVExport(quinielasFinales);
-                          downloadFile(csvContent, 'progol_quinielas.csv', 'text/csv');
+                          downloadFile(csvContent, 'progol_optimizer_portafolio.csv', 'text/csv');
                         }}
                         className="flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                       >
@@ -1698,7 +1639,7 @@ export default function ProgolOptimizerApp() {
                       <button
                         onClick={() => {
                           const jsonContent = generateJSONExport(quinielasFinales, partidosRegular, validacion);
-                          downloadFile(jsonContent, 'progol_quinielas.json', 'application/json');
+                          downloadFile(jsonContent, 'progol_optimizer_portafolio.json', 'application/json');
                         }}
                         className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                       >
@@ -1708,49 +1649,14 @@ export default function ProgolOptimizerApp() {
                       
                       <button
                         onClick={() => {
-                          const txtContent = generateProgolFormat(quinielasFinales, partidosRegular);
+                          const txtContent = generateProgolFormat(quinielasFinales, partidosClasificados);
                           downloadFile(txtContent, 'progol_boletos.txt', 'text/plain');
                         }}
                         className="flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                       >
                         <FileDown className="w-4 h-4" />
-                        Formato Progol
+                        Formato Boletos
                       </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-lg shadow-sm border">
-                  <div className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">📊 Resumen del Portafolio</h3>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">{quinielasFinales.length}</div>
-                        <div className="text-sm text-gray-600">Total Quinielas</div>
-                      </div>
-                      
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">
-                          {quinielasFinales.reduce((acc, q) => acc + q.empates, 0)}
-                        </div>
-                        <div className="text-sm text-gray-600">Total Empates</div>
-                      </div>
-                      
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-purple-600">
-                          ${quinielasFinales.length * 15}
-                        </div>
-                        <div className="text-sm text-gray-600">Costo Total (MXN)</div>
-                      </div>
-                      
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-orange-600">
-                          {validacion?.metricas?.prob_portafolio_11_plus ? 
-                            (validacion.metricas.prob_portafolio_11_plus * 100).toFixed(1) : '0.0'}%
-                        </div>
-                        <div className="text-sm text-gray-600">Pr[≥11] Final</div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -1766,13 +1672,13 @@ export default function ProgolOptimizerApp() {
 // ==================== FUNCIONES AUXILIARES ====================
 
 function generateCSVExport(quinielas) {
-  const headers = ['Quiniela', 'Tipo', ...Array.from({length: 14}, (_, i) => `P${i+1}`), 'Empates', 'Prob_11_Plus'];
-  const rows = quinielas.map((q, i) => [
-    `Q-${i+1}`,
+  const headers = ['ID', 'Tipo', ...Array.from({length: 14}, (_, i) => `P${i+1}`), 'Empates', 'Prob_11_Plus'];
+  const rows = quinielas.map(q => [
+    q.id,
     q.tipo,
     ...q.resultados,
     q.empates,
-    ((q.prob_11_plus || 0) * 100).toFixed(2)
+    ((q.prob_11_plus || 0) * 100).toFixed(2) + '%'
   ]);
   
   return [headers, ...rows].map(row => row.join(',')).join('\n');
@@ -1783,11 +1689,12 @@ function generateJSONExport(quinielas, partidos, validacion) {
     metadata: {
       fecha_generacion: new Date().toISOString(),
       total_quinielas: quinielas.length,
-      metodologia: 'Core + Satélites GRASP-Annealing',
+      metodologia: 'Core + Satélites con GRASP-Annealing',
+      // Source: Metodología Definitiva Progol.docx 
       distribucion_historica: PROGOL_CONFIG.DISTRIBUCION_HISTORICA
     },
-    partidos: partidos,
-    quinielas: quinielas,
+    partidos_clasificados: partidos,
+    portafolio_final: quinielas,
     validacion: validacion
   };
   
@@ -1796,19 +1703,19 @@ function generateJSONExport(quinielas, partidos, validacion) {
 
 function generateProgolFormat(quinielas, partidos) {
   const lines = [
-    'PROGOL OPTIMIZER - QUINIELAS OPTIMIZADAS',
-    '=' .repeat(50),
+    'PROGOL OPTIMIZER - PORTAFOLIO OPTIMIZADO',
+    '='.repeat(50),
     `Generado: ${new Date().toLocaleString()}`,
     `Total quinielas: ${quinielas.length}`,
     '',
     'PARTIDOS:',
-    ...partidos.slice(0, 14).map((p, i) => `${String(i+1).padStart(2)}. ${p.local} vs ${p.visitante}`),
+    ...partidos.slice(0, 14).map((p, i) => `${String(i+1).padStart(2, ' ')}. ${p.local} vs ${p.visitante}`),
     '',
     'QUINIELAS:',
-    ...quinielas.map((q, i) => {
+    ...quinielas.map((q) => {
       const resultados = q.resultados.join(' ');
       const prob = ((q.prob_11_plus || 0) * 100).toFixed(1);
-      return `Q-${String(i+1).padStart(2)}: ${resultados} | Empates: ${q.empates} | Pr[≥11]: ${prob}%`;
+      return `${q.id.padEnd(10)}: ${resultados} | Empates: ${q.empates} | Pr[≥11]: ${prob}%`;
     })
   ];
   
@@ -1821,6 +1728,8 @@ function downloadFile(content, filename, mimeType) {
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
